@@ -12,7 +12,7 @@ namespace LibApp.Controllers
 {
     public class BooksController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private ApplicationDbContext _context;
 
         public BooksController(ApplicationDbContext context)
         {
@@ -37,14 +37,14 @@ namespace LibApp.Controllers
             return View("BookForm", viewModel);
         }
 
-        public IActionResult Index()
+        public ViewResult Index()
         {
 
-            var books = _context.Books
-                .Include(b => b.Genre)
-                .ToList();
+            //var books = _context.Books
+            //  .Include(b => b.Genre)
+            //  .ToList();
 
-            return View(books);
+            return View();
         }
 
 
@@ -74,8 +74,18 @@ namespace LibApp.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Save(Book book)
         {
+            if (!ModelState.IsValid)
+            {
+                var viewModel = new BookFormViewModel
+                {
+                    Book = book,
+                    Genres = _context.Genres.ToList()
+                };
+                return View("BookForm", viewModel);
+            }
             if (book.Id == 0)
             {
                 book.DateAdded = DateTime.Now;
